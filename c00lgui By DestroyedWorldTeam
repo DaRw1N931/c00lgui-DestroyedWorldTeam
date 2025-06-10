@@ -136,7 +136,7 @@ end
 CreateLabel(MainTab, "Destroyed World Team GUI", UDim2.new(0, 0, 0, 0))
 CreateLabel(MainTab, "Active Players: "..#game.Players:GetPlayers(), UDim2.new(0, 0, 0.05, 0))
 
--- Вкладка Scripts (ВЕРНУЛ СКРИПТЫ)
+-- Вкладка Scripts
 CreateLabel(ScriptsTab, "Popular Scripts:", UDim2.new(0, 0, 0, 0))
 
 -- Infinite Yield
@@ -157,7 +157,7 @@ CreateButton(ScriptsTab, "Darknes Emprime (Brookhaven)", UDim2.new(0, 0, 0.2, 0)
     end
 end)
 
--- Вкладка Report (МАССОВЫЕ РЕПОРТЫ РАБОТАЮТ)
+-- Вкладка Report (Исправленные репорты)
 local TargetInput = CreateTextBox(ReportTab, UDim2.new(0, 0, 0, 0))
 TargetInput.PlaceholderText = "Enter player name"
 
@@ -167,12 +167,11 @@ CreateButton(ReportTab, "Report Target", UDim2.new(0, 0, 0.1, 0), function()
         for i = 1, 20 do
             task.spawn(function()
                 pcall(function()
-                    game:GetService("HttpService"):PostAsync(
-                        "https://www.roblox.com/report/async",
-                        string.format("userId=%d&reportType=%s", 
-                            target.UserId, 
-                            "Cheating"
-                        )
+                    -- Используем клиентский метод отправки репортов
+                    game:GetService("Players").LocalPlayer:ReportAbuse(
+                        target,
+                        "Cheating",
+                        "Using exploits (reported by DWT GUI)"
                     )
                 end)
             end)
@@ -181,6 +180,12 @@ CreateButton(ReportTab, "Report Target", UDim2.new(0, 0, 0.1, 0), function()
         game.StarterGui:SetCore("SendNotification", {
             Title = "DWT Report",
             Text = "Reported "..TargetInput.Text.." 20 times!",
+            Duration = 5
+        })
+    else
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "DWT Error",
+            Text = "Player not found!",
             Duration = 5
         })
     end
@@ -192,12 +197,11 @@ CreateButton(ReportTab, "Report Everyone", UDim2.new(0, 0, 0.2, 0), function()
             task.spawn(function()
                 for i = 1, 5 do
                     pcall(function()
-                        game:GetService("HttpService"):PostAsync(
-                            "https://www.roblox.com/report/async",
-                            string.format("userId=%d&reportType=%s", 
-                                player.UserId, 
-                                "Cheating"
-                            )
+                        -- Используем клиентский метод отправки репортов
+                        game:GetService("Players").LocalPlayer:ReportAbuse(
+                            player,
+                            "Cheating",
+                            "Using exploits (mass reported by DWT GUI)"
                         )
                     end)
                     task.wait(0.1)
@@ -212,26 +216,45 @@ CreateButton(ReportTab, "Report Everyone", UDim2.new(0, 0, 0.2, 0), function()
     })
 end)
 
--- Вкладка Fun (ЧАТ-СПАМ РАБОТАЕТ)
-CreateButton(FunTab, "Chat Spam", UDim2.new(0, 0, 0, 0), function()
-    local messages = {
-        "ＤＷＴ ＤＯＭＩＮＡＴＥＳ！",
-        "ＤＥＳＴＲＯＹＥＤ ＷＯＲＬＤ ＴＥＡＭ ＩＳ ＨＥＲＥ！",
-        "ＹＯＵ ＣＡＮＴ ＳＴＯＰ ＵＳ！"
-    }
+-- Вкладка Fun (Исправленный чат-спам)
+local spamActive = false
+local spamTask = nil
+
+CreateButton(FunTab, "Toggle Chat Spam", UDim2.new(0, 0, 0, 0), function()
+    spamActive = not spamActive
     
-    spawn(function()
-        while task.wait(2) do
-            local msg = messages[math.random(1, #messages)]
-            game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+    if spamActive then
+        local messages = {
+            "ＤＷＴ ＤＯＭＩＮＡＴＥＳ！",
+            "ＤＥＳＴＲＯＹＥＤ ＷＯＲＬＤ ＴＥＡＭ ＩＳ ＨＥＲＥ！",
+            "ＹＯＵ ＣＡＮＴ ＳＴＯＰ ＵＳ！"
+        }
+        
+        spamTask = task.spawn(function()
+            while spamActive and task.wait(2) do
+                local msg = messages[math.random(1, #messages)]
+                pcall(function()
+                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+                end)
+            end
+        end)
+        
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "DWT Fun",
+            Text = "Chat spam activated!",
+            Duration = 3
+        })
+    else
+        if spamTask then
+            task.cancel(spamTask)
+            spamTask = nil
         end
-    end)
-    
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "DWT Fun",
-        Text = "Chat spam activated!",
-        Duration = 3
-    })
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "DWT Fun",
+            Text = "Chat spam deactivated!",
+            Duration = 3
+        })
+    end
 end)
 
 -- Кнопка закрытия
@@ -246,6 +269,9 @@ CloseBtn.Parent = MainFrame
 
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
+    if spamTask then
+        task.cancel(spamTask)
+    end
 end)
 
 -- Активация по клавише
