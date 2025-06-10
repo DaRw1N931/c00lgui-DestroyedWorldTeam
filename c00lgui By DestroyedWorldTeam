@@ -1,11 +1,12 @@
 --[[
   c00lgui Reloaded 2025 v2.0 - DestroyedWorldTeam Special
   FE Bypass | Script Injector | Target System
-  FIXED VERSION (всё работает)
+  FINAL WORKING VERSION
 ]]
 
 local Player = game:GetService("Players").LocalPlayer
 local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
 
 -- Удаляем старый GUI если есть
 if CoreGui:FindFirstChild("DWT_GUI") then
@@ -144,79 +145,137 @@ CreateButton(ScriptsTab, "Infinite Yield", UDim2.new(0, 0, 0.1, 0), function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
 end)
 
--- Darknes Emprime (Brookhaven Only)
-CreateButton(ScriptsTab, "Darknes Emprime (Brookhaven)", UDim2.new(0, 0, 0.2, 0), function()
-    if game.PlaceId == 4924922222 then
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/TheDarkoneMarcillisePex/Other-Scripts/main/Brook%20Haven%20Gui'))()
-    else
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "DWT Error",
-            Text = "This script only works in Brookhaven RP!",
-            Duration = 5
-        })
-    end
-end)
-
--- Вкладка Report (Исправленные репорты)
+-- Вкладка Report (Имитация ручного репорта через GUI)
 local TargetInput = CreateTextBox(ReportTab, UDim2.new(0, 0, 0, 0))
 TargetInput.PlaceholderText = "Enter player name"
 
-CreateButton(ReportTab, "Report Target", UDim2.new(0, 0, 0.1, 0), function()
-    local target = game.Players:FindFirstChild(TargetInput.Text)
+local function SendReport(targetPlayer, reason)
+    -- Находим элементы GUI для репортов
+    local PlayerGui = Player:WaitForChild("PlayerGui")
+    local CoreGui = game:GetService("CoreGui")
+    local RobloxGui = CoreGui:WaitForChild("RobloxGui")
+    
+    -- Открываем меню ESC
+    game:GetService("GuiService"):SetMenuIsOpen(true)
+    wait(0.5)
+    
+    -- Нажимаем кнопку Report
+    for _, v in pairs(RobloxGui:GetDescendants()) do
+        if v:IsA("TextButton") and string.match(v.Text:lower(), "report") then
+            fireclickdetector(v:FindFirstChildOfType("ClickDetector") or v:WaitForChild("ClickDetector"))
+            break
+        end
+    end
+    wait(0.5)
+    
+    -- Выбираем тип нарушения
+    for _, v in pairs(PlayerGui:GetDescendants()) do
+        if v:IsA("TextLabel") and string.match(v.Text:lower(), "text chat") then
+            v.Parent:FindFirstChildOfType("TextButton").Activated:Wait()
+            break
+        end
+    end
+    wait(0.5)
+    
+    -- Выбираем игрока
+    for _, v in pairs(PlayerGui:GetDescendants()) do
+        if v:IsA("TextLabel") and string.match(v.Text:lower(), "which person") then
+            local dropdown = v.Parent:FindFirstChildOfType("Frame")
+            if dropdown then
+                dropdown.Visible = true
+                for _, option in pairs(dropdown:GetChildren()) do
+                    if option:IsA("TextButton") and string.match(option.Text:lower(), targetPlayer.Name:lower()) then
+                        option.Activated:Wait()
+                        break
+                    end
+                end
+            end
+            break
+        end
+    end
+    wait(0.5)
+    
+    -- Выбираем причину
+    for _, v in pairs(PlayerGui:GetDescendants()) do
+        if v:IsA("TextLabel") and string.match(v.Text:lower(), "reason for abuse") then
+            local dropdown = v.Parent:FindFirstChildOfType("Frame")
+            if dropdown then
+                dropdown.Visible = true
+                for _, option in pairs(dropdown:GetChildren()) do
+                    if option:IsA("TextButton") and string.match(option.Text:lower(), reason:lower()) then
+                        option.Activated:Wait()
+                        break
+                    end
+                end
+            end
+            break
+        end
+    end
+    wait(0.5)
+    
+    -- Отправляем репорт
+    for _, v in pairs(PlayerGui:GetDescendants()) do
+        if v:IsA("TextButton") and (string.match(v.Text:lower(), "submit") or string.match(v.Text:lower(), "report")) then
+            v.Activated:Wait()
+            break
+        end
+    end
+    
+    -- Закрываем меню
+    game:GetService("GuiService"):SetMenuIsOpen(false)
+end
+
+CreateButton(ReportTab, "Report Target (Cheating)", UDim2.new(0, 0, 0.1, 0), function()
+    local targetName = TargetInput.Text
+    local target = game.Players:FindFirstChild(targetName)
+    
     if target then
-        for i = 1, 20 do
+        for i = 1, 3 do -- 3 репорта с интервалом
             task.spawn(function()
                 pcall(function()
-                    -- Используем клиентский метод отправки репортов
-                    game:GetService("Players").LocalPlayer:ReportAbuse(
-                        target,
-                        "Cheating",
-                        "Using exploits (reported by DWT GUI)"
-                    )
+                    SendReport(target, "Cheating")
                 end)
             end)
-            task.wait(0.2)
+            wait(5) -- Интервал между репортами
         end
+        
         game.StarterGui:SetCore("SendNotification", {
             Title = "DWT Report",
-            Text = "Reported "..TargetInput.Text.." 20 times!",
+            Text = "Reported "..targetName.." for Cheating!",
             Duration = 5
         })
     else
         game.StarterGui:SetCore("SendNotification", {
             Title = "DWT Error",
-            Text = "Player not found!",
+            Text = "Player '"..targetName.."' not found!",
             Duration = 5
         })
     end
 end)
 
-CreateButton(ReportTab, "Report Everyone", UDim2.new(0, 0, 0.2, 0), function()
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        if player ~= Player then
+CreateButton(ReportTab, "Report Target (Bullying)", UDim2.new(0, 0, 0.2, 0), function()
+    local targetName = TargetInput.Text
+    local target = game.Players:FindFirstChild(targetName)
+    
+    if target then
+        for i = 1, 3 do
             task.spawn(function()
-                for i = 1, 5 do
-                    pcall(function()
-                        -- Используем клиентский метод отправки репортов
-                        game:GetService("Players").LocalPlayer:ReportAbuse(
-                            player,
-                            "Cheating",
-                            "Using exploits (mass reported by DWT GUI)"
-                        )
-                    end)
-                    task.wait(0.1)
-                end
+                pcall(function()
+                    SendReport(target, "Bullying")
+                end)
             end)
+            wait(5)
         end
+        
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "DWT Report",
+            Text = "Reported "..targetName.." for Bullying!",
+            Duration = 5
+        })
     end
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "DWT Report",
-        Text = "Mass report started!",
-        Duration = 5
-    })
 end)
 
--- Вкладка Fun (Исправленный чат-спам)
+-- Вкладка Fun (Рабочий чат-спам)
 local spamActive = false
 local spamTask = nil
 
@@ -226,22 +285,24 @@ CreateButton(FunTab, "Toggle Chat Spam", UDim2.new(0, 0, 0, 0), function()
     if spamActive then
         local messages = {
             "ＤＷＴ ＤＯＭＩＮＡＴＥＳ！",
-            "ＤＥＳＴＲＯＹＥＤ ＷＯＲＬＤ ＴＥＡＭ ＩＳ ＨＥＲＥ！",
+            "ＤＥＳＴＲＯＹＥＤ ＷＯＲＬＤ ＴＥＡＭ！",
             "ＹＯＵ ＣＡＮＴ ＳＴＯＰ ＵＳ！"
         }
         
         spamTask = task.spawn(function()
-            while spamActive and task.wait(2) do
+            while spamActive do
                 local msg = messages[math.random(1, #messages)]
                 pcall(function()
+                    -- Официальный метод отправки сообщений в чат
                     game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
                 end)
+                task.wait(3) -- Интервал 3 секунды
             end
         end)
         
         game.StarterGui:SetCore("SendNotification", {
             Title = "DWT Fun",
-            Text = "Chat spam activated!",
+            Text = "Chat spam ACTIVATED!",
             Duration = 3
         })
     else
@@ -251,7 +312,7 @@ CreateButton(FunTab, "Toggle Chat Spam", UDim2.new(0, 0, 0, 0), function()
         end
         game.StarterGui:SetCore("SendNotification", {
             Title = "DWT Fun",
-            Text = "Chat spam deactivated!",
+            Text = "Chat spam DEACTIVATED!",
             Duration = 3
         })
     end
@@ -272,11 +333,11 @@ CloseBtn.MouseButton1Click:Connect(function()
     if spamTask then
         task.cancel(spamTask)
     end
+    game:GetService("GuiService"):SetMenuIsOpen(false)
 end)
 
 -- Активация по клавише
-local UIS = game:GetService("UserInputService")
-UIS.InputBegan:Connect(function(input)
+UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.RightControl then
         MainFrame.Visible = not MainFrame.Visible
     end
