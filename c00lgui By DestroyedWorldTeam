@@ -230,7 +230,7 @@ CreateButton(ReportTab, "Report Target (Cheating)", UDim2.new(0, 0, 0.1, 0), fun
     local target = game.Players:FindFirstChild(targetName)
     
     if target then
-        for i = 1, 404 do -- = 404 репорта с интервалом
+        for i = 0, 404 do -- = 404 репорта с интервалом
             task.spawn(function()
                 pcall(function()
                     SendReport(target, "Cheating")
